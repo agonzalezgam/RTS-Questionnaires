@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Exercise Questionnaires — Controller Tablet</title>
+<style>
+  :root{
+    --bg:#ffffff; --ink:#16202e; --muted:#5b6b7f;
+    --line:#e4e9f0; --line-strong:#cdd6e2;
+    --blue:#1763c9; --blue-ink:#114e9e; --blue-soft:#eef4fc;
+    --green:#1f9d57; --green-soft:#e8f6ee;
+    --amber:#b9770e; --amber-soft:#fdf3e1; --red:#c0392b;
+    --shadow:0 1px 2px rgba(20,40,70,.06), 0 8px 24px rgba(20,40,70,.06);
+    --radius:16px;
+    --font:'Inter','Segoe UI',system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+    --mono:'SFMono-Regular',ui-monospace,'Roboto Mono',Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;height:100%}
+  body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:17px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  button{font-family:inherit}
+  .wrap{max-width:760px;margin:0 auto;padding:22px 20px 64px;min-height:100%}
+
+  /* top bar */
+  .topbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 0 18px;border-bottom:1px solid var(--line)}
+  .brand{display:flex;align-items:center;gap:12px;min-width:0}
+  .mark{width:40px;height:40px;border-radius:11px;flex:0 0 auto;background:var(--blue-soft);color:var(--blue);display:grid;place-items:center;font-weight:700}
+  .brand h1{font-size:16px;margin:0;font-weight:650;letter-spacing:.1px;white-space:nowrap}
+  .brand .sub{font-size:12.5px;color:var(--muted);margin-top:1px}
+  .pos-chip{display:inline-flex;align-items:center;gap:8px;background:var(--blue);color:#fff;border:none;padding:9px 14px;border-radius:999px;font-weight:650;font-size:14px;cursor:pointer;white-space:nowrap}
+  .pos-chip.unset{background:var(--amber)}
+  .pos-chip small{opacity:.8;font-weight:500;font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+  .icon-btn{border:1px solid var(--line-strong);background:#fff;color:var(--muted);width:42px;height:42px;border-radius:11px;cursor:pointer;font-size:18px;display:grid;place-items:center;flex:0 0 auto}
+  .icon-btn:active{background:#f4f7fb}
+
+  .eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:650}
+  .screen{display:none;animation:fade .18s ease}
+  .screen.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){.screen,*{animation:none!important}}
+
+  /* exercise list */
+  .list-head{display:flex;align-items:baseline;justify-content:space-between;margin:26px 2px 12px}
+  .list-head h2{font-size:22px;margin:0;font-weight:680;letter-spacing:-.2px}
+  .filter{margin:0 0 16px}
+  .filter input{width:100%;border:1px solid var(--line-strong);border-radius:12px;padding:12px 14px;font-size:15px;font-family:inherit}
+  .filter input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-soft)}
+  .recon{display:flex;align-items:center;gap:10px;margin:-4px 0 14px;font-size:13px;color:var(--blue-ink);background:var(--blue-soft);border-radius:10px;padding:10px 12px}
+  .recon .spinner-sm{width:14px;height:14px;border-radius:50%;border:2.5px solid rgba(23,99,201,.3);border-top-color:var(--blue);animation:spin .8s linear infinite;flex:0 0 auto}
+  .ex-grid{display:grid;gap:12px}
+  .ex-card{display:flex;align-items:center;gap:16px;width:100%;text-align:left;background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;cursor:pointer;box-shadow:var(--shadow);transition:border-color .12s, transform .04s}
+  .ex-card:active{transform:scale(.992)}
+  .ex-card:hover{border-color:var(--line-strong)}
+  .ex-no{width:52px;height:52px;border-radius:13px;flex:0 0 auto;background:var(--blue-soft);color:var(--blue-ink);display:grid;place-items:center;font-weight:720;font-size:18px}
+  .ex-main{flex:1 1 auto;min-width:0}
+  .ex-main .t{font-weight:640;font-size:17px}
+  .ex-main .d{font-size:13.5px;color:var(--muted);margin-top:2px}
+  .ex-state{display:flex;align-items:center;gap:9px;flex:0 0 auto}
+  .pill{font-size:12.5px;font-weight:650;padding:5px 11px;border-radius:999px;background:#f1f4f8;color:var(--muted);white-space:nowrap}
+  .pill.part{background:var(--amber-soft);color:var(--amber)}
+  .pill.done{background:var(--green-soft);color:var(--green)}
+  .chev{color:var(--line-strong);font-size:22px}
+  .ex-card.done .ex-no{background:var(--green-soft);color:var(--green)}
+
+  /* detail */
+  .back{display:inline-flex;align-items:center;gap:8px;background:none;border:none;color:var(--blue);font-weight:600;font-size:15px;cursor:pointer;padding:8px 0;margin-top:4px}
+  .detail-head{margin:8px 2px 6px}
+  .detail-head h2{font-size:26px;margin:6px 0 2px;font-weight:700;letter-spacing:-.3px}
+  .detail-head p{margin:0;color:var(--muted);font-size:14.5px}
+  .q-grid{display:grid;gap:16px;margin-top:24px}
+  .q-btn{position:relative;display:flex;flex-direction:column;justify-content:space-between;min-height:172px;width:100%;text-align:left;cursor:pointer;border-radius:20px;padding:22px 22px 20px;border:1.5px solid var(--blue);background:var(--blue);color:#fff;box-shadow:0 10px 28px rgba(23,99,201,.22);transition:transform .05s, box-shadow .15s}
+  .q-btn:active{transform:scale(.99)}
+  .q-btn .q-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .q-btn .q-kicker{font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.85;font-weight:650}
+  .q-btn .q-title{font-size:25px;font-weight:720;letter-spacing:-.3px;margin-top:14px}
+  .q-btn .q-desc{font-size:14px;opacity:.9;margin-top:4px;max-width:46ch}
+  .q-btn .q-glyph{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;background:rgba(255,255,255,.16);font-size:22px;flex:0 0 auto}
+  .q-btn .q-status{display:inline-flex;align-items:center;gap:9px;margin-top:18px;font-weight:650;font-size:14px;background:rgba(255,255,255,.16);padding:8px 13px;border-radius:999px;align-self:flex-start}
+  .q-btn .spinner{width:15px;height:15px;border-radius:50%;border:2.5px solid rgba(255,255,255,.45);border-top-color:#fff;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .q-btn.pending{background:#fff;color:var(--amber);border-color:var(--amber);box-shadow:0 8px 22px rgba(185,119,14,.16)}
+  .q-btn.pending .q-glyph{background:var(--amber-soft)}
+  .q-btn.pending .q-status{background:var(--amber-soft)}
+  .q-btn.pending .spinner{border-color:rgba(185,119,14,.3);border-top-color:var(--amber)}
+  .q-btn.synced{background:#fff;color:var(--green);border-color:var(--green);box-shadow:none;cursor:default}
+  .q-btn.synced .q-glyph{background:var(--green-soft)}
+  .q-btn.synced .q-status{background:var(--green-soft)}
+  .q-btn.synced .q-desc{color:var(--muted)}
+  .q-btn.error{background:#fff;color:var(--red);border-color:var(--red);box-shadow:0 8px 22px rgba(192,57,43,.14);cursor:pointer}
+  .q-btn.error .q-glyph{background:#fbe6e3}
+  .q-btn.error .q-status{background:#fbe6e3}
+  .q-btn.error .q-desc{color:var(--muted)}
+
+  .banner{margin:8px 0 22px;border-radius:20px;padding:28px 26px;text-align:center;background:linear-gradient(180deg,#eafaf0,#e0f5ea);border:1px solid #bfe8cf;display:none}
+  .banner.show{display:block;animation:popIn .45s cubic-bezier(.18,.9,.25,1)}
+  @keyframes pop{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:none}}
+  @keyframes popIn{0%{opacity:0;transform:translateY(-6px) scale(.93)}60%{opacity:1;transform:translateY(0) scale(1.03)}100%{transform:scale(1)}}
+  .banner .tick{width:62px;height:62px;border-radius:50%;background:var(--green);color:#fff;display:grid;place-items:center;margin:0 auto 14px;font-size:32px}
+  .banner h3{margin:0 0 6px;font-size:22px;color:#13713e;font-weight:720;letter-spacing:-.2px}
+  .banner p{margin:0;color:#256b46;font-size:15.5px;max-width:42ch;margin-inline:auto}
+  .banner.error-banner{background:linear-gradient(180deg,#fdeae6,#fbe0db);border-color:#f1bdb4}
+  .banner.error-banner .tick{background:var(--red)}
+  .banner.error-banner h3{color:#a3271c}
+  .banner.error-banner p{color:#8c2c22}
+  .hint{margin-top:26px;font-size:13px;color:var(--muted);text-align:center;line-height:1.6}
+
+  /* overlays */
+  .overlay{position:fixed;inset:0;background:rgba(16,32,52,.45);display:none;align-items:center;justify-content:center;z-index:40;padding:18px}
+  .overlay.show{display:flex}
+
+  /* PIN pad */
+  .pin-card{background:#fff;border-radius:22px;width:100%;max-width:360px;padding:28px 24px 24px;box-shadow:0 20px 60px rgba(16,32,52,.3);text-align:center;animation:pop .2s ease}
+  .pin-card h2{margin:0 0 4px;font-size:20px;font-weight:700}
+  .pin-card .lead{color:var(--muted);font-size:13.5px;margin:0 0 20px}
+  .dots{display:flex;gap:14px;justify-content:center;margin:6px 0 22px}
+  .dots span{width:14px;height:14px;border-radius:50%;border:2px solid var(--line-strong);transition:.12s}
+  .dots span.on{background:var(--blue);border-color:var(--blue)}
+  .pin-card.bad .dots span{border-color:var(--red)}
+  .pin-card.bad{animation:shake .4s}
+  @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-9px)}40%{transform:translateX(8px)}60%{transform:translateX(-6px)}80%{transform:translateX(4px)}}
+  .keypad{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .key{height:62px;border-radius:14px;border:1px solid var(--line);background:#fff;font-size:24px;font-weight:600;color:var(--ink);cursor:pointer}
+  .key:active{background:var(--blue-soft)}
+  .key.ghost{border:none;background:none;font-size:16px;color:var(--muted);font-weight:600}
+  .pin-msg{height:18px;margin-top:14px;font-size:13px;color:var(--red);font-weight:600}
+  .pin-cancel{margin-top:6px;background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;padding:8px}
+
+  /* settings sheet */
+  .sheet{background:#fff;width:100%;max-width:560px;border-radius:22px;padding:26px 24px 26px;max-height:90vh;overflow:auto;box-shadow:0 20px 60px rgba(16,32,52,.3);animation:pop .2s ease}
+  .sheet h2{font-size:21px;margin:0 0 4px;font-weight:700}
+  .sheet .lead{color:var(--muted);font-size:14px;margin:0 0 22px}
+  .field{margin-bottom:20px}
+  .field label{display:block;font-weight:640;font-size:14.5px;margin-bottom:7px}
+  .field .desc{font-weight:400;color:var(--muted);font-size:12.5px;margin-top:-3px;margin-bottom:8px}
+  select,input{width:100%;border:1px solid var(--line-strong);border-radius:12px;padding:13px 14px;font-size:16px;font-family:inherit;color:var(--ink);background:#fff}
+  select:focus,input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-soft)}
+  details.adv{border-top:1px solid var(--line);margin-top:6px;padding-top:6px}
+  details.adv summary{cursor:pointer;font-weight:640;font-size:14.5px;padding:10px 2px;color:var(--blue);list-style:none}
+  details.adv summary::-webkit-details-marker{display:none}
+  details.adv summary::before{content:'▸ ';color:var(--muted)}
+  details.adv[open] summary::before{content:'▾ '}
+  .save{width:100%;background:var(--blue);color:#fff;border:none;border-radius:13px;padding:16px;font-size:16.5px;font-weight:680;cursor:pointer;margin-top:6px}
+  .save:active{background:var(--blue-ink)}
+  .sheet-cancel{width:100%;background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;padding:12px;margin-top:4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="brand">
+      <div class="mark">▲</div>
+      <div>
+        <h1>Exercise Questionnaires</h1>
+        <div class="sub">Real-time simulation — controller feedback</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center">
+      <button class="pos-chip unset" id="posChip" onclick="requestSettings()">
+        <small>Position</small><span id="posChipLabel">Not set</span>
+      </button>
+      <button class="icon-btn" onclick="requestSettings()" aria-label="Settings">⚙</button>
+    </div>
+  </div>
+
+  <!-- SCREEN: EXERCISE LIST -->
+  <section class="screen active" id="screen-list">
+    <div class="list-head">
+      <h2>Select an exercise</h2>
+      <span class="eyebrow" id="listProgress"></span>
+    </div>
+    <div class="filter"><input id="exFilter" type="number" inputmode="numeric" placeholder="Find exercise number…" oninput="renderList()"></div>
+    <div class="recon" id="reconNote" style="display:none"><span class="spinner-sm"></span> Restoring completed exercises from the response sheets…</div>
+    <div class="ex-grid" id="exGrid"></div>
+    <p class="hint">After each simulation run, open the exercise you just finished and complete both questionnaires.</p>
+  </section>
+
+  <!-- SCREEN: EXERCISE DETAIL -->
+  <section class="screen" id="screen-detail">
+    <button class="back" onclick="goList()">‹ All exercises</button>
+    <div class="detail-head">
+      <span class="eyebrow">Exercise</span>
+      <h2 id="detailTitle">Exercise</h2>
+      <p id="detailSub"></p>
+    </div>
+
+    <div class="banner" id="banner">
+      <div class="tick">✓</div>
+      <h3>Thank you for your collaboration</h3>
+      <p>You have successfully answered the two questionnaires. You may now relax until your new duty.</p>
+    </div>
+
+    <div class="banner error-banner" id="bannerError">
+      <div class="tick">!</div>
+      <h3>Sync error</h3>
+      <p>We couldn’t confirm one of your answers was logged. Please contact RTS support personnel.</p>
+    </div>
+
+    <div class="q-grid">
+      <button class="q-btn" id="btn-tlx" onclick="startQuestionnaire('tlx')">
+        <div class="q-top"><span class="q-kicker">Workload rating</span><span class="q-glyph">📊</span></div>
+        <div><div class="q-title">NASA-TLX</div><div class="q-desc">Rate the workload you experienced during this run.</div></div>
+        <span class="q-status" id="status-tlx">Open questionnaire →</span>
+      </button>
+
+      <button class="q-btn" id="btn-post" onclick="startQuestionnaire('post')">
+        <div class="q-top"><span class="q-kicker">Run feedback</span><span class="q-glyph">📝</span></div>
+        <div><div class="q-title">Post-exercise questionnaire</div><div class="q-desc">Give feedback on the airspace, traffic and procedures.</div></div>
+        <span class="q-status" id="status-post">Open questionnaire →</span>
+      </button>
+    </div>
+
+    <p class="hint" id="detailHint">Tapping a questionnaire opens it in a new tab. This page checks every 15&nbsp;s until your answer is logged, then locks the button. If it can’t confirm within 3&nbsp;minutes it flags a sync error.</p>
+  </section>
+
+</div>
+
+<!-- PIN OVERLAY -->
+<div class="overlay" id="pinOverlay">
+  <div class="pin-card" id="pinCard">
+    <h2 id="pinTitle">Enter PIN</h2>
+    <p class="lead" id="pinLead">Settings are restricted to the test director.</p>
+    <div class="dots" id="pinDots"><span></span><span></span><span></span><span></span></div>
+    <div class="keypad" id="keypad"></div>
+    <div class="pin-msg" id="pinMsg"></div>
+    <button class="pin-cancel" onclick="closePin()">Cancel</button>
+  </div>
+</div>
+
+<!-- SETTINGS OVERLAY -->
+<div class="overlay" id="settingsOverlay">
+  <div class="sheet">
+    <h2>Tablet settings</h2>
+    <p class="lead">Assign this tablet to its control working position. Everything this tablet logs is tied to the CWP you choose here.</p>
+
+    <div class="field">
+      <label for="positionSelect">This tablet is at</label>
+      <div class="desc">One tablet per CWP. Pick the position in front of you.</div>
+      <select id="positionSelect"></select>
+    </div>
+
+    <details class="adv">
+      <summary>Advanced</summary>
+      <div class="field" style="margin-top:14px">
+        <label for="postSheetId">Post-exercise sheet ID</label>
+        <div class="desc">Tabs named “Ex 01”…“Ex 56”, each with a CWP Position column.</div>
+        <input id="postSheetId" type="text" spellcheck="false">
+      </div>
+      <div class="field">
+        <label for="tlxSheetId">NASA-TLX sheet ID</label>
+        <div class="desc">One tab with CWP Position + Exercise Number columns.</div>
+        <input id="tlxSheetId" type="text" spellcheck="false">
+      </div>
+      <div class="field">
+        <label for="tlxTab">TLX tab name (optional)</label>
+        <div class="desc">Leave blank to use the sheet’s first tab.</div>
+        <input id="tlxTab" type="text" spellcheck="false" placeholder="Respuestas de formulario 1">
+      </div>
+      <div class="field">
+        <label for="statusSheetId">Summary sheet ID (optional)</label>
+        <div class="desc">A single tab listing Exercise + CWP Position for every completed post-exercise form. If set, reboot reads this one tab instead of scanning all 56.</div>
+        <input id="statusSheetId" type="text" spellcheck="false">
+      </div>
+      <div class="field">
+        <label for="statusTab">Summary tab name (optional)</label>
+        <input id="statusTab" type="text" spellcheck="false">
+      </div>
+      <div class="field">
+        <label for="tlxUrl">NASA-TLX form link</label>
+        <input id="tlxUrl" type="url" spellcheck="false">
+      </div>
+      <div class="field">
+        <label for="pollSeconds">Check interval (seconds)</label>
+        <input id="pollSeconds" type="number" min="5" max="600" step="5">
+      </div>
+    </details>
+
+    <button class="save" onclick="saveSettings()">Save settings</button>
+    <button class="sheet-cancel" onclick="closeSettings()">Close</button>
+  </div>
+</div>
+
+<script>
+/* ============================ STORAGE ============================ */
+const Store = (()=> {
+  let ok=true; try{const k='__t';localStorage.setItem(k,'1');localStorage.removeItem(k);}catch(e){ok=false;}
+  const mem={};
+  return {
+    get:k=>{try{return ok?localStorage.getItem(k):(mem[k]??null);}catch(e){return mem[k]??null;}},
+    set:(k,v)=>{try{ok?localStorage.setItem(k,v):(mem[k]=v);}catch(e){mem[k]=v;}}
+  };
+})();
+
+/* ============================ CONFIG ============================ */
+const SETTINGS_PIN = '0000';        // numeric PIN to open Settings
+const SYNC_TIMEOUT_MS = 3*60*1000;  // give up after 3 minutes → sync error
+const TOTAL_EXERCISES = 56;
+
+/* Post-exercise Google Form links, indexed by exercise number (1–56). */
+const FORM = 'https://docs.google.com/forms/d/e/';
+const POST_LINKS = {
+  1:FORM+'1FAIpQLSdtV4p7OhK9SxTCJpFtI4dzRPpjfurJvt2vlhN84tzuSAGlfA/viewform',
+  2:FORM+'1FAIpQLSfFwpeUGt94ZzgzbVhFbLeWkzboQwEkFasnzyQiUXkMe-x9Jg/viewform',
+  3:FORM+'1FAIpQLScBOOv-BtCdKpq4YfzmbdVKIHFHM4afmiX65XLx3wiNYRKwMA/viewform',
+  4:FORM+'1FAIpQLSeweECaOSDbjFKjL-H4_ka2EhHR4tDmyo3BvXho7iw21PMKCQ/viewform',
+  5:FORM+'1FAIpQLSd_Ax9GPuG04fgz8TP7yQ66j51rIDMsjv2b6eIOGidUb8h_EQ/viewform',
+  6:FORM+'1FAIpQLSf_b_1gjhCzfgwpihfBV12Ahv-QyHw1gi8TW3w72XWT84KHfA/viewform',
+  7:FORM+'1FAIpQLSeMsRTgmCkdYo6c8VBdyllKOdW31bocRoxsSE-MA0thnZos0w/viewform',
+  8:FORM+'1FAIpQLScQeazBJHUA41kimpq6Q3UkRXxyhiTN9dvd1To-HAbmY9N3mA/viewform',
+  9:FORM+'1FAIpQLSf8SR_r-ZGZu4E3KsqhBc3krtOf82UUbkdzBfvyXt_a3uZpOQ/viewform',
+  10:FORM+'1FAIpQLSfgGE3TUNOEY2jRXJCDzWDtDZN6BKdAoNSdJjpLMZtbRX4w9g/viewform',
+  11:FORM+'1FAIpQLSeO13YmmkPAO2H2r-Iqsp4XuFpEN_RGmoke7Kz7fZgaUa7zpg/viewform',
+  12:FORM+'1FAIpQLSeAkHtY4ghog4JnIW8p0YJ0hve8Iaehyu4QVHHtW0lFpVs7Wg/viewform',
+  13:FORM+'1FAIpQLScaMB4hIdRS0hdwKhJM7cpEr15ea6c-yOnOZvOvD9GyUq8bKw/viewform',
+  14:FORM+'1FAIpQLSclbN4U6z0acNppODNNebAfGslzkGUF43f0dtUVOZx_fW7CBQ/viewform',
+  15:FORM+'1FAIpQLSdeFdpg8CPPIJj2URyNyP419qQP9OrW0knOm-h1WJO-R9nDMQ/viewform',
+  16:FORM+'1FAIpQLSciaJQb9SHy2VRX9K-rO3M7TbkyFYfGNFEzfPB77ObMBJXGqg/viewform',
+  17:FORM+'1FAIpQLSegeDWVozrooC4uTU5smKnBuiAXQuZ9xN8bklCwtdj9pxbEkQ/viewform',
+  18:FORM+'1FAIpQLSfJMwl-9tHRozsBckeZ90RJ0uqQKu0jgEuLDYEzqUWwdQQFXQ/viewform',
+  19:FORM+'1FAIpQLSch2694fBFGxUU4k80AhgvbCgu5yOhUc4aO3jRnJXvWyE0j5A/viewform',
+  20:FORM+'1FAIpQLSeT-utEXNmyPp59IMzkYc-ClN8JjCgHoTUlc8llx06ARWF00g/viewform',
+  21:FORM+'1FAIpQLSfv13Fq336FK0dE2DtTB7jihYCucjhbo6scUFQIUFtV4Ye26A/viewform',
+  22:FORM+'1FAIpQLSd7DFcA20boSSk5O91cCrTxvMxyh0t-lfJd9d9HSzIKNauxuA/viewform',
+  23:FORM+'1FAIpQLScr_5zGGEubZiDl9YnX8srqXHT3RJRCCp3vyIz8sn9vauMytg/viewform',
+  24:FORM+'1FAIpQLScjM2_STffvfxl9VcR8Ww5SoZeqKWsYir-1iJLHTUJe0moDgQ/viewform',
+  25:FORM+'1FAIpQLSfWUmZgnMumO5tHneKOfAEdB7X-K5Fhyp0Oyz4-WYfN0YmmdA/viewform',
+  26:FORM+'1FAIpQLSfHsHuTb0YUsBh3-Qs4dLyYr5WBY-FN7za14Y0T-WWD-pqVIg/viewform',
+  27:FORM+'1FAIpQLScfb5tPWgkJrlNnyCWet3z4TzSTnQbG286P9gyytveHbnwM5A/viewform',
+  28:FORM+'1FAIpQLSfqpZ8wyBaxotmVnyHj8aI-ljZQ-59VOaUDh3BQgXTvwRjf3Q/viewform',
+  29:FORM+'1FAIpQLSf1xLF3HeTCV0-SVf96twsIs1ru9Z6KcQHSRSALyoI7jlYqLQ/viewform',
+  30:FORM+'1FAIpQLSfRRHDqv0nGHnMJQR2-9WoKRk0e783oJIKMoUCbANtdgodtmw/viewform',
+  31:FORM+'1FAIpQLSfrPrp19Xf9kV4e9-x_n3TcxQNazh2Py1UsczifAaDSh2_xTw/viewform',
+  32:FORM+'1FAIpQLSeQjjqDQpkBuqFPbsYJg06zqeyWns3TOql_l1onmrZF0Zl1sQ/viewform',
+  33:FORM+'1FAIpQLSeMP4aWf5v6NkbQE4tGbUyW6AOcYa8xnJalaX8gpJfJcZL1SA/viewform',
+  34:FORM+'1FAIpQLSfuGkEOCspKDhpkHz4aPRKKVDr44EYU0LvEocMw_rrMYw9NSg/viewform',
+  35:FORM+'1FAIpQLSfMgWqXeX_7G6zeHkaqgPCZ9_w7Tfkx31pVJk1MsnKHZRCmvQ/viewform',
+  36:FORM+'1FAIpQLSfVwvfsqdr6eGxBbDL992e8MAlLmJtEyYcC9j9eOOd2hZy0cw/viewform',
+  37:FORM+'1FAIpQLScWjKBuptqyUNsIJjCnNwVzDvV8bMLo9gJJcG0GtfpAgIfddA/viewform',
+  38:FORM+'1FAIpQLSe-eLnZmhuPZ-e59LwdYZV6SjDEl_gDub2YCuCeKtKA206B4w/viewform',
+  39:FORM+'1FAIpQLSeoqB9ZEWdUTLXURb3hn7KuaVa-9jHNaVAji_pTh63_M3L0sg/viewform',
+  40:FORM+'1FAIpQLSdJ9IprMIccUf8fCMUT8VFRWT08aKtE2vNHdFKW3JCWFBtKHw/viewform',
+  41:FORM+'1FAIpQLScewIAWcTEb2CWZK4Te_bzKAoydKEch7Lwa598g4Qm4h0wA9g/viewform',
+  42:FORM+'1FAIpQLScsRnQe3JJ_YI5nFct4kiHUV4LkwV8Ysttz5ZNnVJZCRm8SXA/viewform',
+  43:FORM+'1FAIpQLSdNnK3hJUnr0uISHVsTZOtn6wZnT88-8oFEHGOOTwv_rFzoQw/viewform',
+  44:FORM+'1FAIpQLSdo650odZmgAgWYyoSUTg1UUQgbvLnzpNXkni-wcOk4CcfSYg/viewform',
+  45:FORM+'1FAIpQLScKCPlZq3nmv6Gw3lqimPFKIcGbyF5rsrJ-lAL4YFLqdi_ikA/viewform',
+  46:FORM+'1FAIpQLSdQWBMSUerGTDWVcfdZvaOeWGGFW41gRe6LfMYxBCYsCkVPSw/viewform',
+  47:FORM+'1FAIpQLScii7yes56jWMW-sTCfaQE6cETcsSE-RUJGOAuJ-A-fDxbyUw/viewform',
+  48:FORM+'1FAIpQLSe9oJ3D8-h3-mVeunCp5FFYJkKimLNjg2ey3pjv3JIjMWIuFg/viewform',
+  49:FORM+'1FAIpQLSc7ANB8N8EnBqDOwipeMtU4dDDQuLRy5s2EMf2PruB-Pt3_Ng/viewform',
+  50:FORM+'1FAIpQLScvXvfVc0y7rtAXn3WtkoxQJdSimfGT8CM23Vkqr5vE0a02Hw/viewform',
+  51:FORM+'1FAIpQLSfZqCauCX3K7W13i5KfxjUFN4FAF9jcFXAPSe0kkBlM6WYO6Q/viewform',
+  52:FORM+'1FAIpQLSdlmV4m_F_S3nRWZBYxHDA6gniIk7gUBvuQgfJAmCoijzvs2w/viewform',
+  53:FORM+'1FAIpQLSeNKTNGZwONQza4BFKJpoKV-vDXSdkrC-lEHROpNET4xxN3Bg/viewform',
+  54:FORM+'1FAIpQLSe7H_fZ8MEOZifIrPcQelzvjpkO5Fxq_BJb0cSOVEI0OS2cTA/viewform',
+  55:FORM+'1FAIpQLSfH3zFnIDuy2GvXjUeVaSI1KjXgOHTIFVVFVDGwxXVM0mRZsQ/viewform',
+  56:FORM+'1FAIpQLScBcxlxgrGyYVwut0LKwLdypp5NuqIKHcmkCCG1_QheKcAsmg/viewform'
+};
+
+const DEFAULTS = {
+  position: '',                                                 // "1".."9" → CWP n
+  postSheetId: '1R9mpxwODvfMR2p4JgHTGjJ-WEqP9NA_qPVKFXpIZQFk',  // post-exercise responses (tabs Ex 01…Ex 56)
+  tlxSheetId:  '171kxEJsV2-Z48oQ_Ka1z1c9XBOP0L1mxZKkE3u3HlQY',  // TLX responses (single tab)
+  tlxTab:      'Respuestas de formulario 1',                    // the TLX sheet's only tab
+  statusSheetId: '1R9mpxwODvfMR2p4JgHTGjJ-WEqP9NA_qPVKFXpIZQFk',// summary tab → one read at reboot
+  statusTab:   'Status',
+  tlxUrl: 'https://forms.gle/9jk6fmbyqoMaXxZp8',                // single TLX form
+  pollSeconds: 15
+};
+
+function loadConfig(){
+  const raw = Store.get('cfg');
+  if(!raw) return {...DEFAULTS};
+  try{ return {...DEFAULTS, ...JSON.parse(raw)}; }catch(e){ return {...DEFAULTS}; }
+}
+function saveConfig(c){ Store.set('cfg', JSON.stringify(c)); }
+let cfg = loadConfig();
+
+/* progress: { "3": { tlx:'idle|pending|synced', post:'…', tlxClick:ts, postClick:ts } } keyed by exercise number */
+function loadProgress(){ try{ return JSON.parse(Store.get('prog')||'{}'); }catch(e){ return {}; } }
+function saveProgress(){ Store.set('prog', JSON.stringify(progress)); }
+let progress = loadProgress();
+
+/* ============================ HELPERS ============================ */
+function exState(num){
+  const p = progress[num]||{};
+  const a = p.tlx==='synced', b = p.post==='synced';
+  if(a&&b) return 'done';
+  if(a||b||p.tlx==='pending'||p.post==='pending'||p.tlx==='error'||p.post==='error') return 'part';
+  return 'todo';
+}
+function show(screen){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(screen).classList.add('active');
+  window.scrollTo(0,0);
+}
+function pad2(n){return String(n).padStart(2,'0');}
+
+/* ============================ EXERCISE LIST ============================ */
+function renderList(){
+  const grid = document.getElementById('exGrid');
+  const filter = (document.getElementById('exFilter').value||'').trim();
+  grid.innerHTML=''; let done=0;
+  for(let n=1;n<=TOTAL_EXERCISES;n++){
+    if(exState(n)==='done') done++;
+    if(filter && !String(n).includes(filter) && pad2(n)!==filter) continue;
+    const st = exState(n);
+    const card = document.createElement('button');
+    card.className = 'ex-card'+(st==='done'?' done':'');
+    const pill = st==='done' ? '<span class="pill done">Complete ✓</span>'
+      : st==='part' ? '<span class="pill part">1 of 2</span>'
+      : '<span class="pill">Not started</span>';
+    card.innerHTML = `
+      <div class="ex-no">${pad2(n)}</div>
+      <div class="ex-main">
+        <div class="t">Exercise ${pad2(n)}</div>
+        <div class="d">NASA-TLX + post-exercise questionnaire</div>
+      </div>
+      <div class="ex-state">${pill}<span class="chev">›</span></div>`;
+    card.onclick = ()=>openExercise(n);
+    grid.appendChild(card);
+  }
+  document.getElementById('listProgress').textContent = `${done} / ${TOTAL_EXERCISES} complete`;
+}
+
+/* ============================ DETAIL + POLLING ============================ */
+let currentEx = null;
+const timers = {};   // `${num}:${type}` -> intervalId
+
+function openExercise(num){
+  if(!cfg.position){ requestSettings(); return; }
+  currentEx = num;
+  document.getElementById('detailTitle').textContent = 'Exercise '+pad2(num);
+  document.getElementById('detailSub').textContent = 'CWP '+cfg.position+' · complete both questionnaires below.';
+  renderDetail();
+  show('screen-detail');
+}
+function goList(){ renderList(); show('screen-list'); }
+
+function renderDetail(){
+  ['tlx','post'].forEach(type=>{
+    const p = progress[currentEx]||{};
+    const st = p[type]||'idle';
+    const btn = document.getElementById('btn-'+type);
+    const status = document.getElementById('status-'+type);
+    btn.classList.remove('pending','synced','error'); btn.disabled=false;
+    if(st==='pending'){ btn.classList.add('pending'); status.innerHTML='<span class="spinner"></span> Waiting for your answer to sync…'; }
+    else if(st==='synced'){ btn.classList.add('synced'); btn.disabled=true; status.innerHTML='✓ Answer received'; }
+    else if(st==='error'){ btn.classList.add('error'); status.innerHTML='⚠ Sync error — tap to retry'; }
+    else{ status.innerHTML='Open questionnaire →'; }
+  });
+  const p = progress[currentEx]||{};
+  const both = p.tlx==='synced' && p.post==='synced';
+  const anyError = p.tlx==='error' || p.post==='error';
+  togglePop(document.getElementById('banner'), both && !anyError);
+  togglePop(document.getElementById('bannerError'), anyError);
+  document.getElementById('detailHint').style.display = (both||anyError) ? 'none':'block';
+}
+function togglePop(el, on){
+  const was = el.classList.contains('show');
+  el.classList.toggle('show', on);
+  if(on && !was){ el.style.animation='none'; void el.offsetWidth; el.style.animation=''; window.scrollTo({top:0, behavior:'smooth'}); }
+}
+
+function startQuestionnaire(type){
+  const p = progress[currentEx] || (progress[currentEx]={});
+  if(p[type]==='synced') return;
+  if(p[type]==='error'){                       // retry: keep the form as-is, resume checking
+    p[type]='pending'; p[type+'Click']=Date.now(); saveProgress();
+    renderDetail(); beginPolling(currentEx, type); return;
+  }
+  if(p[type]!=='pending'){
+    p[type]='pending'; p[type+'Click']=Date.now(); saveProgress();
+    const url = type==='tlx' ? cfg.tlxUrl : POST_LINKS[currentEx];
+    try{ window.open(url,'_blank','noopener'); }catch(e){}
+  }
+  renderDetail();
+  beginPolling(currentEx, type);
+}
+
+function beginPolling(num, type){
+  const key = num+':'+type;
+  if(timers[key]) return;
+  const tick = async ()=>{
+    let ok=false;
+    try{ ok = await checkLogged(num, type, cfg.position); }catch(e){ ok=false; }
+    if(ok){
+      clearInterval(timers[key]); delete timers[key];
+      (progress[num]=progress[num]||{})[type]='synced'; saveProgress();
+      if(currentEx===num) renderDetail(); renderList();
+      return;
+    }
+    const clicked = (progress[num]||{})[type+'Click'] || Date.now();
+    if(Date.now()-clicked > SYNC_TIMEOUT_MS){          // 3 min with no confirmation
+      clearInterval(timers[key]); delete timers[key];
+      (progress[num]=progress[num]||{})[type]='error'; saveProgress();
+      if(currentEx===num) renderDetail(); renderList();
+    }
+  };
+  timers[key] = setInterval(tick, Math.max(5,cfg.pollSeconds)*1000);
+  tick();
+}
+function resumePending(){
+  Object.keys(progress).forEach(num=>{
+    ['tlx','post'].forEach(type=>{ if(progress[num][type]==='pending') beginPolling(num,type); });
+  });
+}
+
+/* ============================ DATA: read the Google Sheets (public, via gviz) ============================
+   The sheets are shared "anyone with the link can view", so the page reads them directly through
+   Google's gviz JSON endpoint — no Apps Script, no backend. A <script> tag (responseHandler) is used,
+   which is JSONP-style and therefore free of CORS restrictions. */
+const POSKEYS = ['cwp position','cwp','position'];
+const EXKEYS  = ['exercise number','exercise','exercise no','exercise nº'];
+
+function norm(v){ return v==null ? '' : String(v).trim(); }
+function val(row, keys){ for(const k of keys){ if(row[k]!=null && norm(row[k])!=='') return row[k]; } return null; }
+function eqNum(a,b){ a=norm(a); b=norm(b); if(a===''||b==='') return false;
+  const na=parseFloat(a), nb=parseFloat(b);
+  return a===b || (!isNaN(na)&&!isNaN(nb)&&na===nb); }
+
+function gvizQuery(sheetId, tab){
+  return new Promise((resolve,reject)=>{
+    if(!sheetId){ reject(new Error('no sheet id')); return; }
+    const cb='__gviz_'+Math.random().toString(36).slice(2);
+    const s=document.createElement('script'); let done=false;
+    window[cb]=resp=>{ done=true; cleanup(); try{ resolve(parseGviz(resp)); }catch(e){ reject(e); } };
+    function cleanup(){ try{delete window[cb];}catch(e){window[cb]=undefined;} s.remove(); clearTimeout(t); }
+    const t=setTimeout(()=>{ if(!done){ cleanup(); reject(new Error('timeout')); } },20000);
+    s.onerror=()=>{ cleanup(); reject(new Error('script error')); };
+    let url=`https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json;responseHandler:${cb}&headers=1`;
+    if(tab) url+=`&sheet=${encodeURIComponent(tab)}`;
+    s.src=url; document.body.appendChild(s);
+  });
+}
+function parseGviz(resp){
+  const t=(resp&&resp.table)||{};
+  const labels=(t.cols||[]).map(c=>String((c&&(c.label||c.id))||'').trim().toLowerCase());
+  return (t.rows||[]).map(r=>{
+    const o={}; (r.c||[]).forEach((cell,i)=>{ o[labels[i]||('c'+i)] = cell ? cell.v : null; });
+    return o;
+  });
+}
+const tlxRows  = ()=> gvizQuery(cfg.tlxSheetId, cfg.tlxTab||null);
+const postRows = n => gvizQuery(cfg.postSheetId, 'Ex '+pad2(n));
+
+/* Live check during a session — called every 15 s by beginPolling. */
+async function checkLogged(num, type, position){
+  try{
+    if(type==='tlx'){
+      const rows=await tlxRows();
+      return rows.some(r => eqNum(val(r,POSKEYS),position) && eqNum(val(r,EXKEYS),num));
+    } else {
+      const rows=await postRows(num);
+      return rows.some(r => eqNum(val(r,POSKEYS),position));
+    }
+  }catch(e){ return false; }
+}
+
+/* ---- Reboot reconciliation: rebuild THIS position's completed exercises from the sheets ----
+   Runs on load and whenever the position changes, so a daily reboot always reflects the sheets. */
+let reconciling=false;
+function markDone(num,type){
+  const n=parseInt(num,10); if(!n) return;
+  const p=progress[n]||(progress[n]={});
+  if(p[type]!=='synced'){
+    p[type]='synced';
+    const key=n+':'+type; if(timers[key]){ clearInterval(timers[key]); delete timers[key]; }
+  }
+}
+async function reconcile(){
+  if(!cfg.position || reconciling) return;
+  reconciling=true;
+  const note=document.getElementById('reconNote'); if(note) note.style.display='flex';
+
+  // TLX — a single request covers every exercise for this position.
+  try{
+    const rows=await tlxRows();
+    rows.forEach(r=>{ if(eqNum(val(r,POSKEYS),cfg.position)){ const ex=val(r,EXKEYS); if(ex!=null) markDone(ex,'tlx'); } });
+  }catch(e){}
+  renderList();
+
+  // POST — one read of the summary tab if configured, otherwise scan each exercise tab.
+  if(cfg.statusSheetId){
+    try{
+      const rows=await gvizQuery(cfg.statusSheetId, cfg.statusTab||null);
+      rows.forEach(r=>{ if(eqNum(val(r,POSKEYS),cfg.position)){ const ex=val(r,EXKEYS); if(ex!=null) markDone(ex,'post'); } });
+    }catch(e){
+      await scanPostTabs();   // summary tab missing/unreadable → fall back to scanning the Ex tabs
+    }
+  } else {
+    await scanPostTabs();
+  }
+
+  saveProgress(); renderList(); if(currentEx) renderDetail();
+  if(note) note.style.display='none';
+  reconciling=false;
+}
+async function scanPostTabs(){
+  let i=1; const CONC=8;
+  async function worker(){
+    while(i<=TOTAL_EXERCISES){
+      const n=i++;
+      try{
+        const rows=await postRows(n);
+        if(rows.some(r => eqNum(val(r,POSKEYS),cfg.position))) markDone(n,'post');
+      }catch(e){}
+      if(n%CONC===0) renderList();
+    }
+  }
+  await Promise.all(Array.from({length:CONC}, worker));
+}
+
+/* ============================ PIN GATE ============================ */
+let pinBuffer='';
+function buildKeypad(){
+  const kp=document.getElementById('keypad'); kp.innerHTML='';
+  const keys=['1','2','3','4','5','6','7','8','9','','0','⌫'];
+  keys.forEach(k=>{
+    const b=document.createElement('button');
+    if(k===''){ b.className='key ghost'; b.disabled=true; }
+    else if(k==='⌫'){ b.className='key ghost'; b.textContent='⌫'; b.onclick=()=>{pinBuffer=pinBuffer.slice(0,-1);paintDots();}; }
+    else { b.className='key'; b.textContent=k; b.onclick=()=>pressDigit(k); }
+    kp.appendChild(b);
+  });
+}
+function paintDots(){
+  document.querySelectorAll('#pinDots span').forEach((d,i)=>d.classList.toggle('on', i<pinBuffer.length));
+}
+function pressDigit(d){
+  if(pinBuffer.length>=4) return;
+  pinBuffer+=d; paintDots();
+  document.getElementById('pinMsg').textContent='';
+  document.getElementById('pinCard').classList.remove('bad');
+  if(pinBuffer.length===4) setTimeout(checkPin,140);
+}
+function checkPin(){
+  if(pinBuffer===SETTINGS_PIN){ pinBuffer=''; closePin(); openSettings(); }
+  else{
+    const card=document.getElementById('pinCard');
+    card.classList.add('bad');
+    document.getElementById('pinMsg').textContent='Incorrect PIN';
+    pinBuffer=''; setTimeout(paintDots,260);
+  }
+}
+function requestSettings(){
+  pinBuffer=''; paintDots();
+  document.getElementById('pinMsg').textContent='';
+  document.getElementById('pinCard').classList.remove('bad');
+  document.getElementById('pinTitle').textContent = cfg.position ? 'Enter PIN' : 'Set up this tablet';
+  document.getElementById('pinLead').textContent = cfg.position
+    ? 'Settings are restricted to the test director.'
+    : 'Enter the director PIN to assign this tablet’s CWP.';
+  document.getElementById('pinOverlay').classList.add('show');
+}
+function closePin(){ document.getElementById('pinOverlay').classList.remove('show'); pinBuffer=''; paintDots(); }
+
+/* ============================ SETTINGS ============================ */
+function openSettings(){
+  fillPositionSelect();
+  document.getElementById('postSheetId').value   = cfg.postSheetId;
+  document.getElementById('tlxSheetId').value    = cfg.tlxSheetId;
+  document.getElementById('tlxTab').value         = cfg.tlxTab;
+  document.getElementById('statusSheetId').value = cfg.statusSheetId;
+  document.getElementById('statusTab').value      = cfg.statusTab;
+  document.getElementById('tlxUrl').value         = cfg.tlxUrl;
+  document.getElementById('pollSeconds').value    = cfg.pollSeconds;
+  document.getElementById('settingsOverlay').classList.add('show');
+}
+function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('show'); }
+function fillPositionSelect(){
+  const sel=document.getElementById('positionSelect');
+  let html='<option value="">— Select CWP —</option>';
+  for(let i=1;i<=9;i++) html+=`<option value="${i}" ${String(i)===cfg.position?'selected':''}>CWP ${i}</option>`;
+  sel.innerHTML=html;
+}
+function saveSettings(){
+  const prevPos = cfg.position;
+  cfg.position     = document.getElementById('positionSelect').value;
+  cfg.postSheetId  = document.getElementById('postSheetId').value.trim();
+  cfg.tlxSheetId   = document.getElementById('tlxSheetId').value.trim();
+  cfg.tlxTab       = document.getElementById('tlxTab').value.trim();
+  cfg.statusSheetId= document.getElementById('statusSheetId').value.trim();
+  cfg.statusTab    = document.getElementById('statusTab').value.trim();
+  cfg.tlxUrl       = document.getElementById('tlxUrl').value.trim();
+  cfg.pollSeconds  = Math.max(5, parseInt(document.getElementById('pollSeconds').value)||15);
+  if(cfg.position!==prevPos) progress={};      // different CWP → rebuild from the sheets
+  saveConfig(cfg); saveProgress(); reflectPosition(); closeSettings(); renderList();
+  if(cfg.position) reconcile();
+}
+function reflectPosition(){
+  const chip=document.getElementById('posChip'), label=document.getElementById('posChipLabel');
+  if(cfg.position){ chip.classList.remove('unset'); label.textContent='CWP '+cfg.position; }
+  else{ chip.classList.add('unset'); label.textContent='Not set'; }
+}
+
+/* ============================ BOOT ============================ */
+buildKeypad();
+reflectPosition();
+renderList();
+resumePending();
+if(cfg.position) reconcile(); else requestSettings();
+</script>
+</body>
+</html>
