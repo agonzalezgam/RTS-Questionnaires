@@ -62,6 +62,14 @@
   .pill.done{background:var(--green-soft);color:var(--green)}
   .chev{color:var(--line-strong);font-size:22px}
   .ex-card.done .ex-no{background:var(--green-soft);color:var(--green)}
+  .tag{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 8px;border-radius:999px;margin-left:6px;vertical-align:middle}
+  .tag.meas{background:var(--blue-soft);color:var(--blue-ink)}
+  .tag.train{background:#eef1f5;color:#6b7787}
+  .pill.lock{background:#eef1f5;color:#8a95a3}
+  .ex-card.locked{background:#f6f8fa;box-shadow:none;cursor:not-allowed;opacity:.75}
+  .ex-card.locked:hover{border-color:var(--line)}
+  .ex-card.locked .ex-no{background:#e9edf2;color:#9aa6b3}
+  .ex-card.locked .ex-main .t{color:#8a95a3}
 
   /* detail */
   .back{display:inline-flex;align-items:center;gap:8px;background:none;border:none;color:var(--blue);font-weight:600;font-size:15px;cursor:pointer;padding:8px 0;margin-top:4px}
@@ -140,6 +148,15 @@
   details.adv summary::-webkit-details-marker{display:none}
   details.adv summary::before{content:'▸ ';color:var(--muted)}
   details.adv[open] summary::before{content:'▾ '}
+  .switch{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--line);border-radius:12px;padding:13px 14px}
+  .switch .sw-txt .t{font-weight:640;font-size:14.5px}
+  .switch .sw-txt .d{color:var(--muted);font-size:12.5px}
+  .toggle{position:relative;width:50px;height:30px;flex:0 0 auto}
+  .toggle input{opacity:0;width:0;height:0;position:absolute}
+  .toggle .track{position:absolute;inset:0;background:var(--line-strong);border-radius:999px;transition:.15s}
+  .toggle .knob{position:absolute;top:3px;left:3px;width:24px;height:24px;background:#fff;border-radius:50%;transition:.15s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+  .toggle input:checked + .track{background:var(--blue)}
+  .toggle input:checked + .track + .knob{transform:translateX(20px)}
   .save{width:100%;background:var(--blue);color:#fff;border:none;border-radius:13px;padding:16px;font-size:16.5px;font-weight:680;cursor:pointer;margin-top:6px}
   .save:active{background:var(--blue-ink)}
   .sheet-cancel{width:100%;background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;padding:12px;margin-top:4px}
@@ -212,7 +229,7 @@
       </button>
     </div>
 
-    <p class="hint" id="detailHint">Tapping a questionnaire opens it in a new tab. This page checks every 15&nbsp;s until your answer is logged, then locks the button. If it can’t confirm within 10&nbsp;minutes it flags a sync error.</p>
+    <p class="hint" id="detailHint">Tapping a questionnaire opens it in a new tab. This page checks every 15&nbsp;s until your answer is logged, then locks the button. If it can’t confirm within 3&nbsp;minutes it flags a sync error.</p>
   </section>
 
 </div>
@@ -233,39 +250,40 @@
 <div class="overlay" id="settingsOverlay">
   <div class="sheet">
     <h2>Tablet settings</h2>
-    <p class="lead">Assign this tablet to its control working position. Everything this tablet logs is tied to the CWP you choose here.</p>
+    <p class="lead">Assign this tablet to its control working position. Everything this tablet logs is tied to the position you choose here.</p>
 
     <div class="field">
       <label for="positionSelect">This tablet is at</label>
-      <div class="desc">One tablet per CWP. Pick the position in front of you.</div>
+      <div class="desc">One tablet per position. Pick the position in front of you.</div>
       <select id="positionSelect"></select>
     </div>
 
     <details class="adv">
       <summary>Advanced</summary>
-      <div class="field" style="margin-top:14px">
+      <div class="switch" style="margin-top:14px">
+        <div class="sw-txt">
+          <div class="t">Enable training exercises</div>
+          <div class="d">When off, training exercises are greyed out and can’t be opened.</div>
+        </div>
+        <label class="toggle"><input type="checkbox" id="trainingEnabled"><span class="track"></span><span class="knob"></span></label>
+      </div>
+      <div class="field" style="margin-top:20px">
         <label for="postSheetId">Post-exercise sheet ID</label>
-        <div class="desc">Tabs named “Ex 01”…“Ex 56”, each with a CWP Position column.</div>
+        <div class="desc">Sheet holding the “Responses” tab (Exercise + CWP Position columns).</div>
         <input id="postSheetId" type="text" spellcheck="false">
       </div>
       <div class="field">
+        <label for="postTab">Post-exercise tab name</label>
+        <input id="postTab" type="text" spellcheck="false" placeholder="Responses">
+      </div>
+      <div class="field">
         <label for="tlxSheetId">NASA-TLX sheet ID</label>
-        <div class="desc">One tab with CWP Position + Exercise Number columns.</div>
+        <div class="desc">One tab with CWP Position + Exercise columns.</div>
         <input id="tlxSheetId" type="text" spellcheck="false">
       </div>
       <div class="field">
-        <label for="tlxTab">TLX tab name (optional)</label>
-        <div class="desc">Leave blank to use the sheet’s first tab.</div>
+        <label for="tlxTab">TLX tab name</label>
         <input id="tlxTab" type="text" spellcheck="false" placeholder="Respuestas de formulario 1">
-      </div>
-      <div class="field">
-        <label for="statusSheetId">Summary sheet ID (optional)</label>
-        <div class="desc">A single tab listing Exercise + CWP Position for every completed post-exercise form. If set, reboot reads this one tab instead of scanning all 56.</div>
-        <input id="statusSheetId" type="text" spellcheck="false">
-      </div>
-      <div class="field">
-        <label for="statusTab">Summary tab name (optional)</label>
-        <input id="statusTab" type="text" spellcheck="false">
       </div>
       <div class="field">
         <label for="tlxUrl">NASA-TLX form link</label>
@@ -295,85 +313,83 @@ const Store = (()=> {
 
 /* ============================ CONFIG ============================ */
 const SETTINGS_PIN = '0000';        // numeric PIN to open Settings
-const SYNC_TIMEOUT_MS = 10*60*1000;  // give up after 3 minutes → sync error
-const TOTAL_EXERCISES = 56;
+const SYNC_TIMEOUT_MS = 3*60*1000;  // give up after 3 minutes → sync error
+const TOTAL_EXERCISES = 47;
+const EX_TRAINING = new Set([1,2,3,4,8,9,10,11,16,22,28,34,36,38,44,46]);
 
-/* Post-exercise Google Form links, indexed by exercise number (1–56). */
+/* Post-exercise Google Form links, indexed by exercise number (1–47). */
 const FORM = 'https://docs.google.com/forms/d/e/';
 const POST_LINKS = {
-  1:FORM+'1FAIpQLSdtV4p7OhK9SxTCJpFtI4dzRPpjfurJvt2vlhN84tzuSAGlfA/viewform',
-  2:FORM+'1FAIpQLSfFwpeUGt94ZzgzbVhFbLeWkzboQwEkFasnzyQiUXkMe-x9Jg/viewform',
-  3:FORM+'1FAIpQLScBOOv-BtCdKpq4YfzmbdVKIHFHM4afmiX65XLx3wiNYRKwMA/viewform',
-  4:FORM+'1FAIpQLSeweECaOSDbjFKjL-H4_ka2EhHR4tDmyo3BvXho7iw21PMKCQ/viewform',
-  5:FORM+'1FAIpQLSd_Ax9GPuG04fgz8TP7yQ66j51rIDMsjv2b6eIOGidUb8h_EQ/viewform',
-  6:FORM+'1FAIpQLSf_b_1gjhCzfgwpihfBV12Ahv-QyHw1gi8TW3w72XWT84KHfA/viewform',
-  7:FORM+'1FAIpQLSeMsRTgmCkdYo6c8VBdyllKOdW31bocRoxsSE-MA0thnZos0w/viewform',
-  8:FORM+'1FAIpQLScQeazBJHUA41kimpq6Q3UkRXxyhiTN9dvd1To-HAbmY9N3mA/viewform',
-  9:FORM+'1FAIpQLSf8SR_r-ZGZu4E3KsqhBc3krtOf82UUbkdzBfvyXt_a3uZpOQ/viewform',
-  10:FORM+'1FAIpQLSfgGE3TUNOEY2jRXJCDzWDtDZN6BKdAoNSdJjpLMZtbRX4w9g/viewform',
-  11:FORM+'1FAIpQLSeO13YmmkPAO2H2r-Iqsp4XuFpEN_RGmoke7Kz7fZgaUa7zpg/viewform',
-  12:FORM+'1FAIpQLSeAkHtY4ghog4JnIW8p0YJ0hve8Iaehyu4QVHHtW0lFpVs7Wg/viewform',
-  13:FORM+'1FAIpQLScaMB4hIdRS0hdwKhJM7cpEr15ea6c-yOnOZvOvD9GyUq8bKw/viewform',
-  14:FORM+'1FAIpQLSclbN4U6z0acNppODNNebAfGslzkGUF43f0dtUVOZx_fW7CBQ/viewform',
-  15:FORM+'1FAIpQLSdeFdpg8CPPIJj2URyNyP419qQP9OrW0knOm-h1WJO-R9nDMQ/viewform',
-  16:FORM+'1FAIpQLSciaJQb9SHy2VRX9K-rO3M7TbkyFYfGNFEzfPB77ObMBJXGqg/viewform',
-  17:FORM+'1FAIpQLSegeDWVozrooC4uTU5smKnBuiAXQuZ9xN8bklCwtdj9pxbEkQ/viewform',
-  18:FORM+'1FAIpQLSfJMwl-9tHRozsBckeZ90RJ0uqQKu0jgEuLDYEzqUWwdQQFXQ/viewform',
-  19:FORM+'1FAIpQLSch2694fBFGxUU4k80AhgvbCgu5yOhUc4aO3jRnJXvWyE0j5A/viewform',
-  20:FORM+'1FAIpQLSeT-utEXNmyPp59IMzkYc-ClN8JjCgHoTUlc8llx06ARWF00g/viewform',
-  21:FORM+'1FAIpQLSfv13Fq336FK0dE2DtTB7jihYCucjhbo6scUFQIUFtV4Ye26A/viewform',
-  22:FORM+'1FAIpQLSd7DFcA20boSSk5O91cCrTxvMxyh0t-lfJd9d9HSzIKNauxuA/viewform',
-  23:FORM+'1FAIpQLScr_5zGGEubZiDl9YnX8srqXHT3RJRCCp3vyIz8sn9vauMytg/viewform',
-  24:FORM+'1FAIpQLScjM2_STffvfxl9VcR8Ww5SoZeqKWsYir-1iJLHTUJe0moDgQ/viewform',
-  25:FORM+'1FAIpQLSfWUmZgnMumO5tHneKOfAEdB7X-K5Fhyp0Oyz4-WYfN0YmmdA/viewform',
-  26:FORM+'1FAIpQLSfHsHuTb0YUsBh3-Qs4dLyYr5WBY-FN7za14Y0T-WWD-pqVIg/viewform',
-  27:FORM+'1FAIpQLScfb5tPWgkJrlNnyCWet3z4TzSTnQbG286P9gyytveHbnwM5A/viewform',
-  28:FORM+'1FAIpQLSfqpZ8wyBaxotmVnyHj8aI-ljZQ-59VOaUDh3BQgXTvwRjf3Q/viewform',
-  29:FORM+'1FAIpQLSf1xLF3HeTCV0-SVf96twsIs1ru9Z6KcQHSRSALyoI7jlYqLQ/viewform',
-  30:FORM+'1FAIpQLSfRRHDqv0nGHnMJQR2-9WoKRk0e783oJIKMoUCbANtdgodtmw/viewform',
-  31:FORM+'1FAIpQLSfrPrp19Xf9kV4e9-x_n3TcxQNazh2Py1UsczifAaDSh2_xTw/viewform',
-  32:FORM+'1FAIpQLSeQjjqDQpkBuqFPbsYJg06zqeyWns3TOql_l1onmrZF0Zl1sQ/viewform',
-  33:FORM+'1FAIpQLSeMP4aWf5v6NkbQE4tGbUyW6AOcYa8xnJalaX8gpJfJcZL1SA/viewform',
-  34:FORM+'1FAIpQLSfuGkEOCspKDhpkHz4aPRKKVDr44EYU0LvEocMw_rrMYw9NSg/viewform',
-  35:FORM+'1FAIpQLSfMgWqXeX_7G6zeHkaqgPCZ9_w7Tfkx31pVJk1MsnKHZRCmvQ/viewform',
-  36:FORM+'1FAIpQLSfVwvfsqdr6eGxBbDL992e8MAlLmJtEyYcC9j9eOOd2hZy0cw/viewform',
-  37:FORM+'1FAIpQLScWjKBuptqyUNsIJjCnNwVzDvV8bMLo9gJJcG0GtfpAgIfddA/viewform',
-  38:FORM+'1FAIpQLSe-eLnZmhuPZ-e59LwdYZV6SjDEl_gDub2YCuCeKtKA206B4w/viewform',
-  39:FORM+'1FAIpQLSeoqB9ZEWdUTLXURb3hn7KuaVa-9jHNaVAji_pTh63_M3L0sg/viewform',
-  40:FORM+'1FAIpQLSdJ9IprMIccUf8fCMUT8VFRWT08aKtE2vNHdFKW3JCWFBtKHw/viewform',
-  41:FORM+'1FAIpQLScewIAWcTEb2CWZK4Te_bzKAoydKEch7Lwa598g4Qm4h0wA9g/viewform',
-  42:FORM+'1FAIpQLScsRnQe3JJ_YI5nFct4kiHUV4LkwV8Ysttz5ZNnVJZCRm8SXA/viewform',
-  43:FORM+'1FAIpQLSdNnK3hJUnr0uISHVsTZOtn6wZnT88-8oFEHGOOTwv_rFzoQw/viewform',
-  44:FORM+'1FAIpQLSdo650odZmgAgWYyoSUTg1UUQgbvLnzpNXkni-wcOk4CcfSYg/viewform',
-  45:FORM+'1FAIpQLScKCPlZq3nmv6Gw3lqimPFKIcGbyF5rsrJ-lAL4YFLqdi_ikA/viewform',
-  46:FORM+'1FAIpQLSdQWBMSUerGTDWVcfdZvaOeWGGFW41gRe6LfMYxBCYsCkVPSw/viewform',
-  47:FORM+'1FAIpQLScii7yes56jWMW-sTCfaQE6cETcsSE-RUJGOAuJ-A-fDxbyUw/viewform',
-  48:FORM+'1FAIpQLSe9oJ3D8-h3-mVeunCp5FFYJkKimLNjg2ey3pjv3JIjMWIuFg/viewform',
-  49:FORM+'1FAIpQLSc7ANB8N8EnBqDOwipeMtU4dDDQuLRy5s2EMf2PruB-Pt3_Ng/viewform',
-  50:FORM+'1FAIpQLScvXvfVc0y7rtAXn3WtkoxQJdSimfGT8CM23Vkqr5vE0a02Hw/viewform',
-  51:FORM+'1FAIpQLSfZqCauCX3K7W13i5KfxjUFN4FAF9jcFXAPSe0kkBlM6WYO6Q/viewform',
-  52:FORM+'1FAIpQLSdlmV4m_F_S3nRWZBYxHDA6gniIk7gUBvuQgfJAmCoijzvs2w/viewform',
-  53:FORM+'1FAIpQLSeNKTNGZwONQza4BFKJpoKV-vDXSdkrC-lEHROpNET4xxN3Bg/viewform',
-  54:FORM+'1FAIpQLSe7H_fZ8MEOZifIrPcQelzvjpkO5Fxq_BJb0cSOVEI0OS2cTA/viewform',
-  55:FORM+'1FAIpQLSfH3zFnIDuy2GvXjUeVaSI1KjXgOHTIFVVFVDGwxXVM0mRZsQ/viewform',
-  56:FORM+'1FAIpQLScBcxlxgrGyYVwut0LKwLdypp5NuqIKHcmkCCG1_QheKcAsmg/viewform'
+  1:FORM+'1FAIpQLSfZ7_n3NNqljKXSY7wvYweyZ9H_y6mgijiIXUv0NTxlSwKX2A/viewform',
+  2:FORM+'1FAIpQLSdszXsWFDg-BFDp-BbdrojP69l4rdxPaha4U0ko6I0RnOHEQQ/viewform',
+  3:FORM+'1FAIpQLSfibGQdCIkFuV36354b8zvN0Q_9VdWxsnxUeVcYHL3XLOJlpg/viewform',
+  4:FORM+'1FAIpQLSdVoR0UamK9ld1OYYzK5-mt4nlGjiCG83idM0He4m-P9NKGbg/viewform',
+  5:FORM+'1FAIpQLSeW38jDr4s6O65S8knO5rUNy0DRAHdzC7aQ7k3FuOqqXawYOA/viewform',
+  6:FORM+'1FAIpQLScM872xv64Efo8NIIEwphygnXSkT0eKNVEs6MlPS15S0AVIxA/viewform',
+  7:FORM+'1FAIpQLSeYNFWDD6XBdsjgxBOpsua5l_lSi2cXSE6muiHfEw3H7LzGFw/viewform',
+  8:FORM+'1FAIpQLSed-vEkvktntcFe4mGwIXBrPnMYjADWqUD1euH1pnT6Us8wOA/viewform',
+  9:FORM+'1FAIpQLSe0wbMUBJmNZljz5svZdOQnyov1GCbJ1aYvntYjuRd-jZnW7w/viewform',
+  10:FORM+'1FAIpQLSf5DDroxBLyRD_C3qTseLwskW7fvlAspwbsiStsKLjLrtWhUg/viewform',
+  11:FORM+'1FAIpQLSfpFd4oufGMDF_ORTtJAnGdkxS4WMeOFn097myw1ydKVXOXxQ/viewform',
+  12:FORM+'1FAIpQLSfoQ_b46Jb3MheENijw_p-PCzU5OgOTWdiidq6JsTGYa0_6nw/viewform',
+  13:FORM+'1FAIpQLScBEwYo2jQXnFpMECTgytgoK9a65QJrNHgVzLnKmpk8XfBVqg/viewform',
+  14:FORM+'1FAIpQLScd7wGaJOVRaw5SJ7ZfabMnPIJWc4887ttqQgYpUCXFbnSZIg/viewform',
+  15:FORM+'1FAIpQLSeKQL17ad-9YM-EaYDG4HjDCitE_7F1sUlJ1Aqb9UnjqULWrA/viewform',
+  16:FORM+'1FAIpQLScbbXJwD0kUmIBfI_DMzWSQvm7jWF0mItdoL57-raqqqPOKew/viewform',
+  17:FORM+'1FAIpQLScySK0AcdqAPBVUTFgJdZ5AaefCQKcRKdfVeGUADMY9zZxBbg/viewform',
+  18:FORM+'1FAIpQLSfPvvQaGiDYBn3kWaxkToAlrhIRhKsIIO1Y4RuqtqCKc4K61A/viewform',
+  19:FORM+'1FAIpQLSf9LmSilv0C3WcO5XJ9Hpuk0cpDDuOfi6u4pS7ZgXMmBGBvNg/viewform',
+  20:FORM+'1FAIpQLScGWF_x4JO2mLPUfoZUQdkdxbXk1Ol8POOcy-4y9fQTYy7GDQ/viewform',
+  21:FORM+'1FAIpQLSeBfOb4Fkqy52myF2rpkuCTNG7kzMWwWAQD8iCjBdzPgiW9sQ/viewform',
+  22:FORM+'1FAIpQLScW3Kat8c2zZfERS6lD45MPB16vE8vSJsesxfPGNso6PCK-mA/viewform',
+  23:FORM+'1FAIpQLScvugE2csbC9KvBhGK0sY7p0JlSj2LouK1AoexOvLTbTfgUYg/viewform',
+  24:FORM+'1FAIpQLSc_GlcLdErnSEeptFxCerHDPlyBM7Ge4i5t971ZYhO7ezUvkQ/viewform',
+  25:FORM+'1FAIpQLSeJxafbVS12Q6UP74EVTxVY1A4lKPtWUNLK9KuAE-q4DENfRA/viewform',
+  26:FORM+'1FAIpQLSePiCGB0OH94dMPcgBid8dBZQNhYuPeRnFXhNJmzVEI4nXXnw/viewform',
+  27:FORM+'1FAIpQLSeh9sl_5UvFh7NkMJwlX2NLAOLrl_Xo9g5iVNTPaKycPOJ7YQ/viewform',
+  28:FORM+'1FAIpQLSeYaJq6wVxOGQnSAjAu39TZQmg3dcG-Th1y6yUIRZ9hggPDIA/viewform',
+  29:FORM+'1FAIpQLScUYPwrVUsdhbV4X4zPhrwVnpJyYqd12Z9SdEYfXlY8DaS7yQ/viewform',
+  30:FORM+'1FAIpQLSd9mDNzU-zpqE11CbVlxqaWCCASvh2UoL0onZn8oKBB5gjnUw/viewform',
+  31:FORM+'1FAIpQLScYRsyvzzUMFQPAjA1yymyXUN2ahmolJsjVBNiqF41dl-PRYg/viewform',
+  32:FORM+'1FAIpQLSdg03vXi_As_25FkB9PqME__8VmfwZa09cB3TLH40nb9DlQ6g/viewform',
+  33:FORM+'1FAIpQLSeo0naFvR5luL-aJ7wBBFvvbHfbBHnAXqkv1It6SLob1C3V6g/viewform',
+  34:FORM+'1FAIpQLSfGu_Wz2p-CvwSjRznw4v5xfNFjBeSOreH2IbufuhT25gq8Vw/viewform',
+  35:FORM+'1FAIpQLSfDOJ72Flq-r8W9vxUW0ORTCMG3vPnm1DV4vO5odz8kF2CF5A/viewform',
+  36:FORM+'1FAIpQLSeQrcl3Wpix7fpUKnmAvKsCg92GNncQW_FrPXujIgC59PkIqQ/viewform',
+  37:FORM+'1FAIpQLSdMKWyRCuOGCJ1dwZV4sofY-HWHk_BRI0iqEcOy4QPGo_lS7Q/viewform',
+  38:FORM+'1FAIpQLSd_IJf74ovatZuI6SzoEARZoasCyLb7ghKSWN_6Am0VthqDhw/viewform',
+  39:FORM+'1FAIpQLSdSRQnDBH1dOQZuRYrhKrqC5_iSlmzZCDodLnkeirzRRa1HOw/viewform',
+  40:FORM+'1FAIpQLSf_XLtniS6GKGCnH3Xs8mLU6eg2i-OWN9mcTyK85GXmvzbGKw/viewform',
+  41:FORM+'1FAIpQLSdH996BsqgmICKnxxjDsTqBJpbFj2_5R8f_srjLblwOKX_5Sg/viewform',
+  42:FORM+'1FAIpQLSffGz_e5eqsdxkp67ACeweA4bSB3Lrfq7zG1jjM3bWBAvtEMA/viewform',
+  43:FORM+'1FAIpQLSdJga2sw6fC9Pf3V5psZkQWsqJXS2U29ZdJqza_vO058QGP7A/viewform',
+  44:FORM+'1FAIpQLSfTWCd5NwfRhAMhJLJCTD7Koe8wzwEs3Bv37BKi0V_ZyGdT1w/viewform',
+  45:FORM+'1FAIpQLSdf_JI4cD121XxZxU0RehWmr6trcvjnUgvK02PSSv571ZtVyA/viewform',
+  46:FORM+'1FAIpQLScTfP5kkfsx71zbFnq5yYFjz2EaSFbMOAZwV9Pia2zjCAAmkQ/viewform',
+  47:FORM+'1FAIpQLSeZT2BoPCYJITtkSivaf7PvqE1ySQ3-DJ3V9LCe7b0Iv4kmRA/viewform'
 };
 
+const CONFIG_VERSION = 5;
 const DEFAULTS = {
-  position: '',                                                 // "1".."9" → CWP n
-  postSheetId: '1R9mpxwODvfMR2p4JgHTGjJ-WEqP9NA_qPVKFXpIZQFk',  // post-exercise responses (tabs Ex 01…Ex 56)
-  tlxSheetId:  '171kxEJsV2-Z48oQ_Ka1z1c9XBOP0L1mxZKkE3u3HlQY',  // TLX responses (single tab)
-  tlxTab:      'Respuestas de formulario 1',                    // the TLX sheet's only tab
-  statusSheetId: '1R9mpxwODvfMR2p4JgHTGjJ-WEqP9NA_qPVKFXpIZQFk',// summary tab → one read at reboot
-  statusTab:   'Status',
-  tlxUrl: 'https://forms.gle/9jk6fmbyqoMaXxZp8',                // single TLX form
+  position: '',                                                 // "1".."9" → Position n
+  trainingEnabled: false,                                       // training exercises locked by default
+  postSheetId: '1D-vlc2GgUPpejFF4veTBcHiEPtN3t920rE0z0nUrKiI',  // post-exercise responses spreadsheet
+  postTab:     'Responses',                                     // single tab: Exercise + CWP Position
+  tlxSheetId:  '1fsBb_6PqV4Z9pnqMCy4Ys1qSfkJA5Y6OnP4v5o8qMQw',  // TLX responses
+  tlxTab:      'Respuestas de formulario 1',
+  tlxUrl:      'https://forms.gle/z8TPn9ZzFsTsuUxm7',           // single TLX form
   pollSeconds: 15
 };
 
 function loadConfig(){
   const raw = Store.get('cfg');
-  if(!raw) return {...DEFAULTS};
-  try{ return {...DEFAULTS, ...JSON.parse(raw)}; }catch(e){ return {...DEFAULTS}; }
+  if(!raw) return {...DEFAULTS, _v:CONFIG_VERSION};
+  try{
+    const saved = JSON.parse(raw);
+    if(saved._v !== CONFIG_VERSION)     // updated build → refresh sheet/link defaults, keep local choices
+      return {...DEFAULTS, position:saved.position||'', trainingEnabled:!!saved.trainingEnabled, _v:CONFIG_VERSION};
+    return {...DEFAULTS, ...saved};
+  }catch(e){ return {...DEFAULTS, _v:CONFIG_VERSION}; }
 }
 function saveConfig(c){ Store.set('cfg', JSON.stringify(c)); }
 let cfg = loadConfig();
@@ -407,19 +423,25 @@ function renderList(){
     if(exState(n)==='done') done++;
     if(filter && !String(n).includes(filter) && pad2(n)!==filter) continue;
     const st = exState(n);
+    const isTrain = EX_TRAINING.has(n);
+    const locked  = isTrain && !cfg.trainingEnabled;
+    const typeTag = isTrain ? '<span class="tag train">Training</span>'
+                            : '<span class="tag meas">Measurement</span>';
     const card = document.createElement('button');
-    card.className = 'ex-card'+(st==='done'?' done':'');
+    card.className = 'ex-card'+(st==='done'?' done':'')+(locked?' locked':'');
     const pill = st==='done' ? '<span class="pill done">Complete ✓</span>'
       : st==='part' ? '<span class="pill part">1 of 2</span>'
       : '<span class="pill">Not started</span>';
+    const right = locked ? '<span class="pill lock">🔒 Training</span>'
+                         : `${pill}<span class="chev">›</span>`;
     card.innerHTML = `
       <div class="ex-no">${pad2(n)}</div>
       <div class="ex-main">
-        <div class="t">Exercise ${pad2(n)}</div>
+        <div class="t">Exercise ${pad2(n)} ${typeTag}</div>
         <div class="d">NASA-TLX + post-exercise questionnaire</div>
       </div>
-      <div class="ex-state">${pill}<span class="chev">›</span></div>`;
-    card.onclick = ()=>openExercise(n);
+      <div class="ex-state">${right}</div>`;
+    if(locked){ card.disabled = true; } else { card.onclick = ()=>openExercise(n); }
     grid.appendChild(card);
   }
   document.getElementById('listProgress').textContent = `${done} / ${TOTAL_EXERCISES} complete`;
@@ -430,10 +452,11 @@ let currentEx = null;
 const timers = {};   // `${num}:${type}` -> intervalId
 
 function openExercise(num){
+  if(EX_TRAINING.has(num) && !cfg.trainingEnabled) return;   // training locked
   if(!cfg.position){ requestSettings(); return; }
   currentEx = num;
   document.getElementById('detailTitle').textContent = 'Exercise '+pad2(num);
-  document.getElementById('detailSub').textContent = 'CWP '+cfg.position+' · complete both questionnaires below.';
+  document.getElementById('detailSub').textContent = 'Position '+cfg.position+' · complete both questionnaires below.';
   renderDetail();
   show('screen-detail');
 }
@@ -544,18 +567,20 @@ function parseGviz(resp){
   });
 }
 const tlxRows  = ()=> gvizQuery(cfg.tlxSheetId, cfg.tlxTab||null);
-const postRows = n => gvizQuery(cfg.postSheetId, 'Ex '+pad2(n));
+const postRows = ()=> gvizQuery(cfg.postSheetId, cfg.postTab||'Responses');
+
+/* The CWP Position cell reads like "Position 3 - ALPHA" (sector varies per exercise),
+   so match by the position NUMBER contained in it, not an exact string. */
+function posMatch(cell, pos){
+  const m = norm(cell).match(/position\s*0*(\d+)/i);
+  return m ? parseInt(m[1],10) === parseInt(pos,10) : eqNum(cell, pos);
+}
 
 /* Live check during a session — called every 15 s by beginPolling. */
 async function checkLogged(num, type, position){
   try{
-    if(type==='tlx'){
-      const rows=await tlxRows();
-      return rows.some(r => eqNum(val(r,POSKEYS),position) && eqNum(val(r,EXKEYS),num));
-    } else {
-      const rows=await postRows(num);
-      return rows.some(r => eqNum(val(r,POSKEYS),position));
-    }
+    const rows = type==='tlx' ? await tlxRows() : await postRows();
+    return rows.some(r => posMatch(val(r,POSKEYS),position) && eqNum(val(r,EXKEYS),num));
   }catch(e){ return false; }
 }
 
@@ -575,42 +600,22 @@ async function reconcile(){
   reconciling=true;
   const note=document.getElementById('reconNote'); if(note) note.style.display='flex';
 
-  // TLX — a single request covers every exercise for this position.
+  // TLX — one read of its tab, filtered to this position.
   try{
     const rows=await tlxRows();
-    rows.forEach(r=>{ if(eqNum(val(r,POSKEYS),cfg.position)){ const ex=val(r,EXKEYS); if(ex!=null) markDone(ex,'tlx'); } });
+    rows.forEach(r=>{ if(posMatch(val(r,POSKEYS),cfg.position)){ const ex=val(r,EXKEYS); if(ex!=null) markDone(ex,'tlx'); } });
   }catch(e){}
   renderList();
 
-  // POST — one read of the summary tab if configured, otherwise scan each exercise tab.
-  if(cfg.statusSheetId){
-    try{
-      const rows=await gvizQuery(cfg.statusSheetId, cfg.statusTab||null);
-      rows.forEach(r=>{ if(eqNum(val(r,POSKEYS),cfg.position)){ const ex=val(r,EXKEYS); if(ex!=null) markDone(ex,'post'); } });
-    }catch(e){
-      await scanPostTabs();   // summary tab missing/unreadable → fall back to scanning the Ex tabs
-    }
-  } else {
-    await scanPostTabs();
-  }
+  // POST — one read of the "Responses" tab, filtered to this position.
+  try{
+    const rows=await postRows();
+    rows.forEach(r=>{ if(posMatch(val(r,POSKEYS),cfg.position)){ const ex=val(r,EXKEYS); if(ex!=null) markDone(ex,'post'); } });
+  }catch(e){}
 
   saveProgress(); renderList(); if(currentEx) renderDetail();
   if(note) note.style.display='none';
   reconciling=false;
-}
-async function scanPostTabs(){
-  let i=1; const CONC=8;
-  async function worker(){
-    while(i<=TOTAL_EXERCISES){
-      const n=i++;
-      try{
-        const rows=await postRows(n);
-        if(rows.some(r => eqNum(val(r,POSKEYS),cfg.position))) markDone(n,'post');
-      }catch(e){}
-      if(n%CONC===0) renderList();
-    }
-  }
-  await Promise.all(Array.from({length:CONC}, worker));
 }
 
 /* ============================ PIN GATE ============================ */
@@ -652,7 +657,7 @@ function requestSettings(){
   document.getElementById('pinTitle').textContent = cfg.position ? 'Enter PIN' : 'Set up this tablet';
   document.getElementById('pinLead').textContent = cfg.position
     ? 'Settings are restricted to the test director.'
-    : 'Enter the director PIN to assign this tablet’s CWP.';
+    : 'Enter the director PIN to assign this tablet’s position.';
   document.getElementById('pinOverlay').classList.add('show');
 }
 function closePin(){ document.getElementById('pinOverlay').classList.remove('show'); pinBuffer=''; paintDots(); }
@@ -660,39 +665,40 @@ function closePin(){ document.getElementById('pinOverlay').classList.remove('sho
 /* ============================ SETTINGS ============================ */
 function openSettings(){
   fillPositionSelect();
-  document.getElementById('postSheetId').value   = cfg.postSheetId;
-  document.getElementById('tlxSheetId').value    = cfg.tlxSheetId;
-  document.getElementById('tlxTab').value         = cfg.tlxTab;
-  document.getElementById('statusSheetId').value = cfg.statusSheetId;
-  document.getElementById('statusTab').value      = cfg.statusTab;
-  document.getElementById('tlxUrl').value         = cfg.tlxUrl;
-  document.getElementById('pollSeconds').value    = cfg.pollSeconds;
+  document.getElementById('trainingEnabled').checked = !!cfg.trainingEnabled;
+  document.getElementById('postSheetId').value = cfg.postSheetId;
+  document.getElementById('postTab').value     = cfg.postTab;
+  document.getElementById('tlxSheetId').value  = cfg.tlxSheetId;
+  document.getElementById('tlxTab').value      = cfg.tlxTab;
+  document.getElementById('tlxUrl').value      = cfg.tlxUrl;
+  document.getElementById('pollSeconds').value = cfg.pollSeconds;
   document.getElementById('settingsOverlay').classList.add('show');
 }
 function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('show'); }
 function fillPositionSelect(){
   const sel=document.getElementById('positionSelect');
-  let html='<option value="">— Select CWP —</option>';
-  for(let i=1;i<=9;i++) html+=`<option value="${i}" ${String(i)===cfg.position?'selected':''}>CWP ${i}</option>`;
+  let html='<option value="">— Select position —</option>';
+  for(let i=1;i<=9;i++) html+=`<option value="${i}" ${String(i)===cfg.position?'selected':''}>Position ${i}</option>`;
   sel.innerHTML=html;
 }
 function saveSettings(){
   const prevPos = cfg.position;
-  cfg.position     = document.getElementById('positionSelect').value;
-  cfg.postSheetId  = document.getElementById('postSheetId').value.trim();
-  cfg.tlxSheetId   = document.getElementById('tlxSheetId').value.trim();
-  cfg.tlxTab       = document.getElementById('tlxTab').value.trim();
-  cfg.statusSheetId= document.getElementById('statusSheetId').value.trim();
-  cfg.statusTab    = document.getElementById('statusTab').value.trim();
-  cfg.tlxUrl       = document.getElementById('tlxUrl').value.trim();
-  cfg.pollSeconds  = Math.max(5, parseInt(document.getElementById('pollSeconds').value)||15);
-  if(cfg.position!==prevPos) progress={};      // different CWP → rebuild from the sheets
+  cfg.position        = document.getElementById('positionSelect').value;
+  cfg.trainingEnabled = document.getElementById('trainingEnabled').checked;
+  cfg.postSheetId     = document.getElementById('postSheetId').value.trim();
+  cfg.postTab         = document.getElementById('postTab').value.trim();
+  cfg.tlxSheetId      = document.getElementById('tlxSheetId').value.trim();
+  cfg.tlxTab          = document.getElementById('tlxTab').value.trim();
+  cfg.tlxUrl          = document.getElementById('tlxUrl').value.trim();
+  cfg.pollSeconds     = Math.max(5, parseInt(document.getElementById('pollSeconds').value)||15);
+  cfg._v = CONFIG_VERSION;
+  if(cfg.position!==prevPos) progress={};      // different position → rebuild from the sheets
   saveConfig(cfg); saveProgress(); reflectPosition(); closeSettings(); renderList();
   if(cfg.position) reconcile();
 }
 function reflectPosition(){
   const chip=document.getElementById('posChip'), label=document.getElementById('posChipLabel');
-  if(cfg.position){ chip.classList.remove('unset'); label.textContent='CWP '+cfg.position; }
+  if(cfg.position){ chip.classList.remove('unset'); label.textContent=cfg.position; }
   else{ chip.classList.add('unset'); label.textContent='Not set'; }
 }
 
