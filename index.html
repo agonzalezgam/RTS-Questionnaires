@@ -269,12 +269,13 @@
       </div>
       <div class="field" style="margin-top:20px">
         <label for="postSheetId">Post-exercise sheet ID</label>
-        <div class="desc">Sheet holding the “Responses” tab (Exercise + CWP Position columns).</div>
+        <div class="desc">Sheet holding the per-exercise tabs 01B…18B (each with a CWP Position column).</div>
         <input id="postSheetId" type="text" spellcheck="false">
       </div>
       <div class="field">
-        <label for="postTab">Post-exercise tab name</label>
-        <input id="postTab" type="text" spellcheck="false" placeholder="Responses">
+        <label for="postTabSuffix">Post-exercise tab suffix</label>
+        <div class="desc">Tabs are named 01+suffix … 18+suffix (e.g. 01B).</div>
+        <input id="postTabSuffix" type="text" spellcheck="false" placeholder="B">
       </div>
       <div class="field">
         <label for="tlxSheetId">NASA-TLX sheet ID</label>
@@ -314,70 +315,37 @@ const Store = (()=> {
 /* ============================ CONFIG ============================ */
 const SETTINGS_PIN = '0000';        // numeric PIN to open Settings
 const SYNC_TIMEOUT_MS = 3*60*1000;  // give up after 3 minutes → sync error
-const TOTAL_EXERCISES = 47;
-const EX_TRAINING = new Set([1,2,3,4,8,9,10,11,16,22,28,34,36,38,44,46]);
+const TOTAL_EXERCISES = 18;
+const EX_TRAINING = new Set([1,3,5,12]);
 
-/* Post-exercise Google Form links, indexed by exercise number (1–47). */
-const FORM = 'https://docs.google.com/forms/d/e/';
+/* Post-exercise questionnaire links, by exercise number. Training (FAM) exercises
+   have no questionnaire, so they are intentionally absent (used to lock those cards). */
 const POST_LINKS = {
-  1:FORM+'1FAIpQLSfZ7_n3NNqljKXSY7wvYweyZ9H_y6mgijiIXUv0NTxlSwKX2A/viewform',
-  2:FORM+'1FAIpQLSdszXsWFDg-BFDp-BbdrojP69l4rdxPaha4U0ko6I0RnOHEQQ/viewform',
-  3:FORM+'1FAIpQLSfibGQdCIkFuV36354b8zvN0Q_9VdWxsnxUeVcYHL3XLOJlpg/viewform',
-  4:FORM+'1FAIpQLSdVoR0UamK9ld1OYYzK5-mt4nlGjiCG83idM0He4m-P9NKGbg/viewform',
-  5:FORM+'1FAIpQLSeW38jDr4s6O65S8knO5rUNy0DRAHdzC7aQ7k3FuOqqXawYOA/viewform',
-  6:FORM+'1FAIpQLScM872xv64Efo8NIIEwphygnXSkT0eKNVEs6MlPS15S0AVIxA/viewform',
-  7:FORM+'1FAIpQLSeYNFWDD6XBdsjgxBOpsua5l_lSi2cXSE6muiHfEw3H7LzGFw/viewform',
-  8:FORM+'1FAIpQLSed-vEkvktntcFe4mGwIXBrPnMYjADWqUD1euH1pnT6Us8wOA/viewform',
-  9:FORM+'1FAIpQLSe0wbMUBJmNZljz5svZdOQnyov1GCbJ1aYvntYjuRd-jZnW7w/viewform',
-  10:FORM+'1FAIpQLSf5DDroxBLyRD_C3qTseLwskW7fvlAspwbsiStsKLjLrtWhUg/viewform',
-  11:FORM+'1FAIpQLSfpFd4oufGMDF_ORTtJAnGdkxS4WMeOFn097myw1ydKVXOXxQ/viewform',
-  12:FORM+'1FAIpQLSfoQ_b46Jb3MheENijw_p-PCzU5OgOTWdiidq6JsTGYa0_6nw/viewform',
-  13:FORM+'1FAIpQLScBEwYo2jQXnFpMECTgytgoK9a65QJrNHgVzLnKmpk8XfBVqg/viewform',
-  14:FORM+'1FAIpQLScd7wGaJOVRaw5SJ7ZfabMnPIJWc4887ttqQgYpUCXFbnSZIg/viewform',
-  15:FORM+'1FAIpQLSeKQL17ad-9YM-EaYDG4HjDCitE_7F1sUlJ1Aqb9UnjqULWrA/viewform',
-  16:FORM+'1FAIpQLScbbXJwD0kUmIBfI_DMzWSQvm7jWF0mItdoL57-raqqqPOKew/viewform',
-  17:FORM+'1FAIpQLScySK0AcdqAPBVUTFgJdZ5AaefCQKcRKdfVeGUADMY9zZxBbg/viewform',
-  18:FORM+'1FAIpQLSfPvvQaGiDYBn3kWaxkToAlrhIRhKsIIO1Y4RuqtqCKc4K61A/viewform',
-  19:FORM+'1FAIpQLSf9LmSilv0C3WcO5XJ9Hpuk0cpDDuOfi6u4pS7ZgXMmBGBvNg/viewform',
-  20:FORM+'1FAIpQLScGWF_x4JO2mLPUfoZUQdkdxbXk1Ol8POOcy-4y9fQTYy7GDQ/viewform',
-  21:FORM+'1FAIpQLSeBfOb4Fkqy52myF2rpkuCTNG7kzMWwWAQD8iCjBdzPgiW9sQ/viewform',
-  22:FORM+'1FAIpQLScW3Kat8c2zZfERS6lD45MPB16vE8vSJsesxfPGNso6PCK-mA/viewform',
-  23:FORM+'1FAIpQLScvugE2csbC9KvBhGK0sY7p0JlSj2LouK1AoexOvLTbTfgUYg/viewform',
-  24:FORM+'1FAIpQLSc_GlcLdErnSEeptFxCerHDPlyBM7Ge4i5t971ZYhO7ezUvkQ/viewform',
-  25:FORM+'1FAIpQLSeJxafbVS12Q6UP74EVTxVY1A4lKPtWUNLK9KuAE-q4DENfRA/viewform',
-  26:FORM+'1FAIpQLSePiCGB0OH94dMPcgBid8dBZQNhYuPeRnFXhNJmzVEI4nXXnw/viewform',
-  27:FORM+'1FAIpQLSeh9sl_5UvFh7NkMJwlX2NLAOLrl_Xo9g5iVNTPaKycPOJ7YQ/viewform',
-  28:FORM+'1FAIpQLSeYaJq6wVxOGQnSAjAu39TZQmg3dcG-Th1y6yUIRZ9hggPDIA/viewform',
-  29:FORM+'1FAIpQLScUYPwrVUsdhbV4X4zPhrwVnpJyYqd12Z9SdEYfXlY8DaS7yQ/viewform',
-  30:FORM+'1FAIpQLSd9mDNzU-zpqE11CbVlxqaWCCASvh2UoL0onZn8oKBB5gjnUw/viewform',
-  31:FORM+'1FAIpQLScYRsyvzzUMFQPAjA1yymyXUN2ahmolJsjVBNiqF41dl-PRYg/viewform',
-  32:FORM+'1FAIpQLSdg03vXi_As_25FkB9PqME__8VmfwZa09cB3TLH40nb9DlQ6g/viewform',
-  33:FORM+'1FAIpQLSeo0naFvR5luL-aJ7wBBFvvbHfbBHnAXqkv1It6SLob1C3V6g/viewform',
-  34:FORM+'1FAIpQLSfGu_Wz2p-CvwSjRznw4v5xfNFjBeSOreH2IbufuhT25gq8Vw/viewform',
-  35:FORM+'1FAIpQLSfDOJ72Flq-r8W9vxUW0ORTCMG3vPnm1DV4vO5odz8kF2CF5A/viewform',
-  36:FORM+'1FAIpQLSeQrcl3Wpix7fpUKnmAvKsCg92GNncQW_FrPXujIgC59PkIqQ/viewform',
-  37:FORM+'1FAIpQLSdMKWyRCuOGCJ1dwZV4sofY-HWHk_BRI0iqEcOy4QPGo_lS7Q/viewform',
-  38:FORM+'1FAIpQLSd_IJf74ovatZuI6SzoEARZoasCyLb7ghKSWN_6Am0VthqDhw/viewform',
-  39:FORM+'1FAIpQLSdSRQnDBH1dOQZuRYrhKrqC5_iSlmzZCDodLnkeirzRRa1HOw/viewform',
-  40:FORM+'1FAIpQLSf_XLtniS6GKGCnH3Xs8mLU6eg2i-OWN9mcTyK85GXmvzbGKw/viewform',
-  41:FORM+'1FAIpQLSdH996BsqgmICKnxxjDsTqBJpbFj2_5R8f_srjLblwOKX_5Sg/viewform',
-  42:FORM+'1FAIpQLSffGz_e5eqsdxkp67ACeweA4bSB3Lrfq7zG1jjM3bWBAvtEMA/viewform',
-  43:FORM+'1FAIpQLSdJga2sw6fC9Pf3V5psZkQWsqJXS2U29ZdJqza_vO058QGP7A/viewform',
-  44:FORM+'1FAIpQLSfTWCd5NwfRhAMhJLJCTD7Koe8wzwEs3Bv37BKi0V_ZyGdT1w/viewform',
-  45:FORM+'1FAIpQLSdf_JI4cD121XxZxU0RehWmr6trcvjnUgvK02PSSv571ZtVyA/viewform',
-  46:FORM+'1FAIpQLScTfP5kkfsx71zbFnq5yYFjz2EaSFbMOAZwV9Pia2zjCAAmkQ/viewform',
-  47:FORM+'1FAIpQLSeZT2BoPCYJITtkSivaf7PvqE1ySQ3-DJ3V9LCe7b0Iv4kmRA/viewform'
+  2:'https://forms.gle/8CKz9ToHJy4arPLG9',
+  4:'https://forms.gle/WhMeXSZEcGLyBum66',
+  6:'https://forms.gle/5HkzWrdaxAWsut8m6',
+  7:'https://forms.gle/TQwTXvAYWjuSJyeD8',
+  8:'https://forms.gle/XJK11QPDNcMvn5TM9',
+  9:'https://forms.gle/h9X68FjPGYA8Ffwk9',
+  10:'https://forms.gle/bjKXSAtYwNaAGcSo8',
+  11:'https://forms.gle/rQsf5Khi585AySVg8',
+  13:'https://forms.gle/fWu7ZCmyRUJohEKQ9',
+  14:'https://forms.gle/V8bBfb8i12PaYeju5',
+  15:'https://forms.gle/5bHGN2fpmwKUki6f6',
+  16:'https://forms.gle/RaTyiVcNLZGt8nBv8',
+  17:'https://forms.gle/iRVqDZ4FzdNAm19T8',
+  18:'https://forms.gle/kXwqSterMkyXvTE77'
 };
 
-const CONFIG_VERSION = 5;
+const CONFIG_VERSION = 7;
 const DEFAULTS = {
   position: '',                                                 // "1".."9" → Position n
   trainingEnabled: false,                                       // training exercises locked by default
-  postSheetId: '1D-vlc2GgUPpejFF4veTBcHiEPtN3t920rE0z0nUrKiI',  // post-exercise responses spreadsheet
-  postTab:     'Responses',                                     // single tab: Exercise + CWP Position
-  tlxSheetId:  '1fsBb_6PqV4Z9pnqMCy4Ys1qSfkJA5Y6OnP4v5o8qMQw',  // TLX responses
+  postSheetId: '1ov9HML_u3T19XU99bKxGATk1AP1bmpZ0HOFQ096pXb8',  // post-exercise responses spreadsheet (tabs 01B…18B)
+  postTabSuffix: 'B',                                           // per-exercise tabs are named 01B, 02B, …
+  tlxSheetId:  '14BheKuiXLx2AbLllqJEAQcspmKHJudl-WiShGxHkwQM',  // TLX responses
   tlxTab:      'Respuestas de formulario 1',
-  tlxUrl:      'https://forms.gle/z8TPn9ZzFsTsuUxm7',           // single TLX form
+  tlxUrl:      'https://forms.gle/EDrqPdSpT93xwm2V6',           // single TLX form
   pollSeconds: 15
 };
 
@@ -424,7 +392,7 @@ function renderList(){
     if(filter && !String(n).includes(filter) && pad2(n)!==filter) continue;
     const st = exState(n);
     const isTrain = EX_TRAINING.has(n);
-    const locked  = isTrain && !cfg.trainingEnabled;
+    const locked  = isTrain && (!cfg.trainingEnabled || !POST_LINKS[n]);
     const typeTag = isTrain ? '<span class="tag train">Training</span>'
                             : '<span class="tag meas">Measurement</span>';
     const card = document.createElement('button');
@@ -452,7 +420,7 @@ let currentEx = null;
 const timers = {};   // `${num}:${type}` -> intervalId
 
 function openExercise(num){
-  if(EX_TRAINING.has(num) && !cfg.trainingEnabled) return;   // training locked
+  if(EX_TRAINING.has(num) && (!cfg.trainingEnabled || !POST_LINKS[num])) return;   // training / no questionnaire
   if(!cfg.position){ requestSettings(); return; }
   currentEx = num;
   document.getElementById('detailTitle').textContent = 'Exercise '+pad2(num);
@@ -567,7 +535,7 @@ function parseGviz(resp){
   });
 }
 const tlxRows  = ()=> gvizQuery(cfg.tlxSheetId, cfg.tlxTab||null);
-const postRows = ()=> gvizQuery(cfg.postSheetId, cfg.postTab||'Responses');
+const postRows = n => gvizQuery(cfg.postSheetId, pad2(n)+(cfg.postTabSuffix||''));
 
 /* The CWP Position cell reads like "Position 3 - ALPHA" (sector varies per exercise),
    so match by the position NUMBER contained in it, not an exact string. */
@@ -579,8 +547,13 @@ function posMatch(cell, pos){
 /* Live check during a session — called every 15 s by beginPolling. */
 async function checkLogged(num, type, position){
   try{
-    const rows = type==='tlx' ? await tlxRows() : await postRows();
-    return rows.some(r => posMatch(val(r,POSKEYS),position) && eqNum(val(r,EXKEYS),num));
+    if(type==='tlx'){
+      const rows=await tlxRows();
+      return rows.some(r => posMatch(val(r,POSKEYS),position) && eqNum(val(r,EXKEYS),num));
+    } else {
+      const rows=await postRows(num);          // tab is exercise-specific → match position only
+      return rows.some(r => posMatch(val(r,POSKEYS),position));
+    }
   }catch(e){ return false; }
 }
 
@@ -607,15 +580,24 @@ async function reconcile(){
   }catch(e){}
   renderList();
 
-  // POST — one read of the "Responses" tab, filtered to this position.
-  try{
-    const rows=await postRows();
-    rows.forEach(r=>{ if(posMatch(val(r,POSKEYS),cfg.position)){ const ex=val(r,EXKEYS); if(ex!=null) markDone(ex,'post'); } });
-  }catch(e){}
+  // POST — one read per exercise tab (skips training / exercises without a questionnaire).
+  await scanPostTabs();
 
   saveProgress(); renderList(); if(currentEx) renderDetail();
   if(note) note.style.display='none';
   reconciling=false;
+}
+async function scanPostTabs(){
+  const list=[]; for(let n=1;n<=TOTAL_EXERCISES;n++) if(POST_LINKS[n]) list.push(n);
+  let i=0; const CONC=8;
+  async function worker(){
+    while(i<list.length){
+      const n=list[i++];
+      try{ const rows=await postRows(n); if(rows.some(r=>posMatch(val(r,POSKEYS),cfg.position))) markDone(n,'post'); }catch(e){}
+      renderList();
+    }
+  }
+  await Promise.all(Array.from({length:CONC}, worker));
 }
 
 /* ============================ PIN GATE ============================ */
@@ -667,7 +649,7 @@ function openSettings(){
   fillPositionSelect();
   document.getElementById('trainingEnabled').checked = !!cfg.trainingEnabled;
   document.getElementById('postSheetId').value = cfg.postSheetId;
-  document.getElementById('postTab').value     = cfg.postTab;
+  document.getElementById('postTabSuffix').value = cfg.postTabSuffix;
   document.getElementById('tlxSheetId').value  = cfg.tlxSheetId;
   document.getElementById('tlxTab').value      = cfg.tlxTab;
   document.getElementById('tlxUrl').value      = cfg.tlxUrl;
@@ -686,7 +668,7 @@ function saveSettings(){
   cfg.position        = document.getElementById('positionSelect').value;
   cfg.trainingEnabled = document.getElementById('trainingEnabled').checked;
   cfg.postSheetId     = document.getElementById('postSheetId').value.trim();
-  cfg.postTab         = document.getElementById('postTab').value.trim();
+  cfg.postTabSuffix   = document.getElementById('postTabSuffix').value.trim();
   cfg.tlxSheetId      = document.getElementById('tlxSheetId').value.trim();
   cfg.tlxTab          = document.getElementById('tlxTab').value.trim();
   cfg.tlxUrl          = document.getElementById('tlxUrl').value.trim();
